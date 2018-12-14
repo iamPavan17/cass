@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+
+from cassandra.cluster import Cluster<br>
+from cassandra.query import SimpleStatement<br>
+from cassandra.auth import PlainTextAuthProvider<br><br>
+
+KEYSPACE ="PESUMCA"
+def main():<br>
+	cluster = Cluster(['localhost'])<br>
+	auth_provider = PlainTextAuthProvider(<br>
+        username='cassandra', password='cassandra')<br>
+	cluster = Cluster(auth_provider=auth_provider)<br>
+	session = cluster.connect()<br><br>
+# 1:	<br>
+	# creating keyspace<br>
+	session.execute("""<br>
+	CREATE KEYSPACE IF NOT EXISTS %s with replication = {'class': 'SimpleStrategy', 'replication_factor': 3}<br>
+	""" % KEYSPACE)<br>
+	session.execute("use %s" %KEYSPACE)<br>
+# 2:	<br>
+	# creating Employee table<br>
+	session.execute("""<br>
+	CREATE TABLE IF NOT EXISTS employee (<br>
+	    id uuid,<br>
+	    emp_code text,<br>
+	    emp_fname text,<br>
+	    emp_lname text,<br>
+	    doj date,<br>
+	    salary float,<br>
+	    primary key(id, emp_code)<br>
+	)<br>
+	""")<br>
+# 3:<br>
+	# creating Employee_info table<br>
+	session.execute("""<br>
+	CREATE TABLE IF NOT EXISTS employee_info (<br>
+	    id uuid,<br>
+	    emp_code text,<br>
+	    email set<text>,<br>
+	    phone set<text>,<br>
+	    dependents map<text, text>,<br>
+	    primary key(id, emp_code)<br>
+	)<br>
+	""")<br>
+# 4:<br>
+	# creating Emp_dept_proj table<br>
+	session.execute("""<br>
+	CREATE TABLE IF NOT EXISTS emp_dept_proj (<br>
+	    id uuid,<br>
+	    dept_id text, <br>
+	    emp_id text, <br>
+	    proj_details list<text>, <br>
+	    proj_sdate date, <br>
+	    proj_edate date,<br>
+	    primary key(id, dept_id, emp_id)<br>
+	)<br>
+	""")<br>
+<br>
+# 5:<br>
+	# inserting data into employee table<br>
+	session.execute("""BEGIN BATCH<br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp001', 'Roman', 'Reigns', '2011-09-21', 50000);<br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp002', 'John', 'cena', '2011-09-21', 50000);<br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp003', 'Seth', 'Rollins', '2011-09-21', 50000);<br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp004', 'dean', 'ambrose', '2011-09-21', 50000); <br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp005', 'connor', 'mcgregor', '2011-09-21', 50000); <br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp006', 'brock', 'lsener', '2011-09-21', 50000); <br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp007', 'finn', 'ballor', '2011-09-21', 50000); <br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp008', 'aj', 'styles', '2011-09-21', 50000); <br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp009', 'khabib', 'n', '2011-09-21', 50000); <br>
+	    INSERT INTO employee (id, emp_code, emp_fname, emp_lname, doj, salary) VALUES (now(), 'emp010', 'the', 'rock', '2011-09-21', 50000); <br><br>
+    apply batch;""")<br>
+<br>
+# inserting data into employee_info<br>
+	session.execute("""BEGIN BATCH<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp001', {'name': 'aaa', 'age': '21'}, {'a@mail.com','aa@mail.com'}, {'43234','23423'});<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp002', {'name': 'bbb', 'age': '32'}, {'b@mail.com','bb@mail.com'}, {'43234','23423'});<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp003', {'name': 'ccc', 'age': '32'}, {'c@mail.com','cc@mail.com'}, {'43234','23423'});<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp004', {'name': 'ddd', 'age': '33'}, {'d@mail.com','dd@mail.com'}, {'43234','23423'});<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp005', {'name': 'eee', 'age': '45'}, {'e@mail.com','ee@mail.com'}, {'43234','23423'});<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp006', {'name': 'fff', 'age': '53'}, {'f@mail.com','ff@mail.com'}, {'43234','23423'});<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp007', {'name': 'ggg', 'age': '51'}, {'g@mail.com','gg@mail.com'}, {'43234','23423'});<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp008', {'name': 'hhh', 'age': '27'}, {'h@mail.com','hh@mail.com'}, {'43234','23423'});<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp009', {'name': 'iii', 'age': '32'}, {'i@mail.com','ii@mail.com'}, {'43234','23423'});<br>
+	INSERT INTO employee_info(id, emp_code, dependents, email, phone) VALUES(now(), 'emp010', {'name': 'jjj', 'age': '43'}, {'j@mail.com','jj@mail.com'}, {'43234','23423'});<br>
+	apply batch;""")<br>
+<br>
+# inserting data into emp_dept_proj<br>
+	session.execute("""BEGIN BATCH<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep001', 'emp001', ['quiz','me'], '2014-12-01', '2011-01-21');<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep002', 'emp002', ['Bengaluru','metro'], '2014-12-01', '2013-11-12');<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep003', 'emp003', ['Typing','war'], '2013-12-01', '2012-11-30');<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep004', 'emp004', ['url','shortner'], '2013-12-01', '2010-11-15');<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep005', 'emp005', ['movie','search'], '2012-12-01', '2009-11-16');<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep006', 'emp006', ['bbbbb','bbbb'], '2015-12-01', '2012-11-17');<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep007', 'emp007', ['aaaa','aaaa'], '2016-12-01', '2012-11-15');<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep008', 'emp008', ['bbbb','bbbb'], '2014-12-01', '2012-11-12');<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep009', 'emp009', ['ccccc','ccccc'], '2012-12-01', '2011-11-29');<br>
+		INSERT INTO emp_dept_proj(id, dept_id, emp_id, proj_details, proj_edate, proj_sdate) VALUES(now(), 'dep010', 'emp0010', ['dddd','dddd'], '2011-12-01', '2010-11-11'); <br>
+	apply batch;""")<br>
+<br>
+# # 6:<br>
+# 	# displaying data<br>
+	emp = session.execute_async("SELECT * FROM employee")<br>
+	print("\n\n***************EMPLOYEE TABLE***************\n")<br>
+	for i in emp.result():<br>
+		print(i.emp_fname)<br>
+<br>
+	# emp_info = session.execute_async("SELECT * FROM employee_info")<br>
+	# print("\n\n***************EMPLOYEE_INFO TABLE***************\n")<br>
+	# for j in emp_info.result():<br>
+	# 	print(j)<br>
+	
+	# emp_dept = session.execute_async("SELECT * FROM emp_dept_proj")<br>
+	# print("\n\n***************EMPLOYEE_DEPT_PROJECT TABLE***************\n")<br>
+	# for k in emp_dept.result():<br>
+	# 	print(k)<br>
+<br>
+if __name__ == '__main__':<br>
+		main()<br>
+
+</body>
+</html>
